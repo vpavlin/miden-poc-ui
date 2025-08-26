@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Account, Contact } from "../types";
 import toast from "react-hot-toast";
 import { deployAccount } from "@/lib/midenClient";
-
+import { generatePrivateKey, getPublicKey } from "@waku/message-encryption";
+ 
 interface AccountManagementProps {
   deployedAccounts: Account[];
   setDeployedAccounts: (accounts: Account[]) => void;
@@ -31,6 +32,18 @@ export default function AccountManagement({
       setIsDeployingAccount(true);
       toast.loading("Deploying account...");
       const account = await deployAccount(newAccount.isPublic);
+      const privateKey = generatePrivateKey();
+      const publicKey = getPublicKey(privateKey);
+
+      localStorage.setItem(
+        `account-${account.id().toString()}`,
+        JSON.stringify({
+          id: account.id().toString(),
+          privateKey: Buffer.from(privateKey).toString("hex"),
+          publicKey: Buffer.from(publicKey).toString("hex"),
+          isPublic: newAccount.isPublic,
+        })
+      );
 
       setDeployedAccounts([
         ...deployedAccounts,
@@ -46,6 +59,7 @@ export default function AccountManagement({
         {
           name: newAccount.name || `Account ${deployedAccounts.length + 1}`,
           address: account.id().toString(),
+          publicKey: Buffer.from(publicKey).toString("hex"),
         },
       ]);
 

@@ -1,10 +1,10 @@
 "use client";
 
 import { ReactNode, useMemo } from "react";
-import { WalletProvider } from "@demox-labs/miden-wallet-adapter-react";
-import { WalletModalProvider } from "@demox-labs/miden-wallet-adapter-reactui";
-import { TridentWalletAdapter } from "@demox-labs/miden-wallet-adapter-trident";
-import { useWallet } from "@demox-labs/miden-wallet-adapter-react";
+import { MidenWalletAdapter, WalletMultiButton, WalletProvider } from "@demox-labs/miden-wallet-adapter";
+import { WalletModalProvider } from "@demox-labs/miden-wallet-adapter";
+import { WalletAdapter } from "@demox-labs/miden-wallet-adapter";
+import { useWallet } from "@demox-labs/miden-wallet-adapter";
 import "@demox-labs/miden-wallet-adapter-reactui/styles.css";
 import { Toaster } from "react-hot-toast";
 
@@ -13,14 +13,9 @@ interface ClientLayoutProps {
 }
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
-  const wallets = useMemo(
-    () => [
-      new TridentWalletAdapter({
-        appName: "Miden Wallet",
-      }),
-    ],
-    []
-  );
+  const wallets = [
+    new MidenWalletAdapter({ appName: 'Your Miden App' }),
+  ];
 
   return (
     <WalletProvider wallets={wallets} autoConnect>
@@ -34,8 +29,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 }
 
 function PublicKeyDisplay() {
-  const { publicKey } = useWallet();
-  return publicKey ? (
+  const { accountId } = useWallet();
+  console.log(accountId)
+  return accountId ? (
     <div
       style={{
         position: "fixed",
@@ -50,7 +46,7 @@ function PublicKeyDisplay() {
         zIndex: 1000,
       }}
     >
-      Connected: {publicKey}
+      Connected: {accountId}
     </div>
-  ) : null;
+  ) : <WalletMultiButton />;
 }

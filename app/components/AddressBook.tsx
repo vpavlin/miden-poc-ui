@@ -14,12 +14,13 @@ export default function AddressBook({
   const [newContact, setNewContact] = useState<Contact>({
     name: "",
     address: "",
+    publicKey: "",
   });
 
   const addToAddressBook = () => {
     if (newContact.name && newContact.address) {
       setAddressBook([...addressBook, newContact]);
-      setNewContact({ name: "", address: "" });
+      setNewContact({ name: "", address: "", publicKey: "" });
     }
   };
 
@@ -36,67 +37,72 @@ export default function AddressBook({
       {/* Add New Contact Form */}
       <div className="mb-8 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
         <h3 className="text-lg font-semibold mb-4">Add New Contact</h3>
-        <div className="flex gap-4">
-          <input
-            type="text"
-            placeholder="Contact Name"
-            value={newContact.name}
-            onChange={(e) =>
-              setNewContact({ ...newContact, name: e.target.value })
-            }
-            className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          />
-          <input
-            type="text"
-            placeholder="Address"
-            value={newContact.address}
-            onChange={(e) =>
-              setNewContact({
-                ...newContact,
-                address: e.target.value,
-              })
-            }
-            className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          />
-          <button
-            onClick={addToAddressBook}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            Add Contact
-          </button>
+        <div className="flex flex-col gap-4">
+          {/* Row for Contact Name and Address */}
+          <div className="flex flex-row gap-4">
+            <input
+              type="text"
+              placeholder="Contact Name"
+              value={newContact.name}
+              onChange={(e) =>
+                setNewContact({ ...newContact, name: e.target.value })
+              }
+              className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            <input
+              type="text"
+              placeholder="Address"
+              value={newContact.address}
+              onChange={(e) =>
+                setNewContact({
+                  ...newContact,
+                  address: e.target.value,
+                })
+              }
+              className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* Row for Public Key */}
+          <div className="flex flex-row">
+            <input
+              type="text"
+              placeholder="Public Key"
+              value={newContact.publicKey}
+              onChange={(e) =>
+                setNewContact({
+                  ...newContact,
+                  publicKey: e.target.value,
+                })
+              }
+              className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
         </div>
+        <button
+          onClick={addToAddressBook}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+        >
+          Add Contact
+        </button>
       </div>
 
-      {/* Contact List */}
+      {/* Address Listing */}
       <div className="space-y-4">
         {addressBook.map((contact, index) => (
           <div
             key={index}
-            className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
+            className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700"
           >
-            <div>
-              <p className="font-semibold">{contact.name}</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-mono">
-                {contact.address}
+            <div className="flex flex-col gap-2">
+              <p className="text-lg font-semibold">{contact.name}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Address: {contact.address}
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Public Key: {contact.publicKey}
               </p>
             </div>
-            <button
-              onClick={() => removeFromAddressBook(index)}
-              className="p-2 text-red-500 hover:text-red-600"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
           </div>
         ))}
       </div>

@@ -10,11 +10,13 @@ export type Faucet = {
 export type Contact = {
   name: string;
   address: string;
+  publicKey: string;
 };
 
 export type Recipient = {
   address: string;
   amount: string;
+  publicKey: string;
 };
 
 export type Account = {

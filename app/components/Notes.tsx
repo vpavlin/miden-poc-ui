@@ -1,7 +1,10 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { consumeAllNotes, getAccountId } from "@/lib/midenClient";
+import { consumeAllNotes, getAccountId, initializeMidenSDK } from "@/lib/midenClient";
 import { nodeEndpoint } from "@/lib/constants";
+import { storeSerializedNote } from "@/lib/api/miden";
+import { WebClient } from "@demox-labs/miden-sdk";
+import { useWallet } from "@demox-labs/miden-wallet-adapter";
 
 interface NotesProps {
   selectedAccount: string | null;
@@ -10,25 +13,68 @@ interface NotesProps {
   fetchPortfolio: () => Promise<void>;
 }
 
+interface PrivateNote {
+  id: string;
+  content: string;
+  timestamp: string;
+}
+
 export default function Notes({
   selectedAccount,
   consumableNotes,
   setConsumableNotes,
   fetchPortfolio,
 }: NotesProps) {
+  const exportNote = async (note: any) => {
+    try {
+      // Serialize the note using the Miden SDK
+      const serializedNote = await note.inputNoteRecord().serialize();
+      console.log(serializedNote)
+      
+      // Copy to clipboard for immediate sharing
+      await navigator.clipboard.writeText(serializedNote);
+      
+      toast.success("Note exported and copied to clipboard");
+    } catch (error) {
+      console.error("Error exporting note:", error);
+      toast.error("Failed to export note");
+    }
+  };
   const [isLoadingNotes, setIsLoadingNotes] = useState(false);
+  const [isLoadingPrivateNotes, setIsLoadingPrivateNotes] = useState(false);
+  const [privateNotes, setPrivateNotes] = useState<PrivateNote[]>([]);
+  const { wallet, accountId, requestPrivateNotes } = useWallet();
+
+
+
+  const getPrivateNotes = async () => {
+    if (!requestPrivateNotes) {
+      toast.error("Wallet not connected or doesn't support private notes");
+      return;
+    }
+
+    setIsLoadingPrivateNotes(true);
+    try {
+      const notes = await requestPrivateNotes();
+      setPrivateNotes(notes);
+    } catch (error) {
+      console.error("Error fetching private notes:", error);
+      toast.error("Failed to fetch private notes");
+    } finally {
+      setIsLoadingPrivateNotes(false);
+    }
+  };
 
   const getConsumableNotes = async () => {
     if (!selectedAccount) return;
 
     setIsLoadingNotes(true);
     try {
-      const { WebClient } = await import("@demox-labs/miden-sdk");
+      const client = await import("@/lib/webClient");
+      const webClient = await client.getClient();
       const AccountId = await getAccountId();
-      const client = await WebClient.createClient(nodeEndpoint);
-      await client.syncState();
-
-      const notes = await client.getConsumableNotes(
+      
+      const notes = await webClient.getConsumableNotes(
         AccountId.fromHex(selectedAccount)
       );
       console.log(notes);
@@ -262,6 +308,16 @@ export default function Notes({
                       </svg>
                     </button>
                   </div>
+                  
+                  {/* Export Button */}
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      onClick={() => exportNote(note)}
+                      className="px-3 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200 rounded text-sm hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+                    >
+                      Export Note
+                    </button>
+                  </div>
 
                   {/* Recipient Information */}
                   <div className="mb-4">
@@ -326,6 +382,137 @@ export default function Notes({
                 </div>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      {/* Private Notes Section */}
+      <div className="mt-8 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Private Notes</h3>
+          <button
+            onClick={getPrivateNotes}
+            disabled={!wallet || !accountId || isLoadingPrivateNotes}
+            className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {isLoadingPrivateNotes ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Loading...
+              </>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Refresh Private Notes
+              </>
+            )}
+          </button>
+        </div>
+        {isLoadingPrivateNotes ? (
+          <div className="text-center py-8">
+            <svg
+              className="animate-spin h-8 w-8 mx-auto text-indigo-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <p className="mt-4 text-slate-500 dark:text-slate-400">
+              Loading private notes...
+            </p>
+          </div>
+        ) : privateNotes.length === 0 ? (
+          <div className="text-center py-8">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-12 w-12 mx-auto text-slate-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            <p className="mt-4 text-slate-500 dark:text-slate-400">
+              {wallet && accountId
+                ? "No private notes found"
+                : "Connect wallet to view private notes"}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {privateNotes.map((note, index) => (
+              <div
+                key={index}
+                className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h4 className="font-semibold text-lg">
+                      Private Note {index + 1}
+                    </h4>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      ID: {note.id}
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {note.timestamp}
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-700/50 rounded p-3">
+                  <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+                    {note.content}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

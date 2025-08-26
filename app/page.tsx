@@ -9,6 +9,9 @@ import AddressBook from "./components/AddressBook";
 import Notes from "./components/Notes";
 import FaucetComponent from "./components/Faucet";
 import Logo from "./components/Logo";
+import { initialize } from "next/dist/server/lib/render-server";
+import { initializeDispatcher } from "@/lib/wakuClient";
+import { hexToUint8Array } from "@/lib/utils";
 
 // Disable static generation for this page
 export const dynamic = "force-dynamic";
@@ -35,6 +38,17 @@ export default function Home() {
     if (savedFaucets) setDeployedFaucets(JSON.parse(savedFaucets));
     if (savedAddressBook) setAddressBook(JSON.parse(savedAddressBook));
   }, []);
+
+  useEffect(() => {
+    // Initialize Waku dispatcher
+    const accountInfo = localStorage.getItem(`account-${selectedAccount}`)
+
+    if (accountInfo) {
+      const { publicKey, privateKey } = JSON.parse(accountInfo);
+      initializeDispatcher(hexToUint8Array(privateKey));
+    }
+   
+  }, [selectedAccount]);
 
   // Save to localStorage whenever state changes
   useEffect(() => {

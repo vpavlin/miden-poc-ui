@@ -8,10 +8,10 @@ import {
   OutputNotesArray,
   NoteType,
   AccountStorageMode,
+  OutputNote
 } from "@demox-labs/miden-sdk";
 import { buildP2IDNote } from "./utils";
-
-const nodeEndpoint = "https://rpc.testnet.miden.io:443";
+import { nodeEndpoint } from "./constants";
 
 export interface Asset {
   tokenAddress: string;
@@ -24,9 +24,15 @@ export interface TransferRequest {
   faucet: any;
 }
 
+export interface PrivateTransactionInfo {
+  txId: string;
+  noteIds: string[];
+  noteBytes: string[];
+}
+
 let client: any = null;
 
-async function getClient() {
+export async function getClient() {
   if (!client) {
     const { WebClient } = await import("@demox-labs/miden-sdk");
     client = await WebClient.createClient(nodeEndpoint);
@@ -66,9 +72,7 @@ export async function batchTransfer(
   const { OutputNotesArray, TransactionRequestBuilder, NoteType } =
     await import("@demox-labs/miden-sdk");
 
-  // build a list of  output notes array
-  const outputNotes = new OutputNotesArray(
-    await Promise.all(
+    const outputNotesTmp:OutputNote[] = await Promise.all(
       request.map(async (r) => {
         return await buildP2IDNote(
           sender,
@@ -79,19 +83,42 @@ export async function batchTransfer(
         );
       })
     )
-  );
+    console.log(outputNotesTmp)
+  
+    const outputNotesArray = new OutputNotesArray(null);
+    for (const note of outputNotesTmp) {
+      outputNotesArray.append(note);
+    }
+  
+    const transactionRequest = new TransactionRequestBuilder()
+      .withOwnOutputNotes(outputNotesArray)
+      .build();
+  
+    console.log("Transactions:", outputNotesTmp, transactionRequest);
 
-  const transactionRequest = new TransactionRequestBuilder()
-    .withOwnOutputNotes(outputNotes)
-    .build();
-
-  console.log("Transactions:", outputNotes, transactionRequest);
-
-  let txResult = await client.newTransaction(sender, transactionRequest);
+  const txResult = await client.newTransaction(sender, transactionRequest);
 
   await client.submitTransaction(txResult);
+  await client.syncState();
 
-  return txResult.executedTransaction().id().toHex();
+  const noteIds = []
+  const noteBytes = []
+  for (const note of outputNotesTmp) {
+    const fullNote = note.intoFull();
+    if (!fullNote) {
+      console.warn("Note is not a full note:", note);
+      continue
+    }
+    const fullNoteId = fullNote.id().toString()
+    console.log(fullNoteId)
+
+    const fullNoteBytes = await client.exportNote(fullNoteId, "Full");
+    console.log(fullNoteBytes)
+    noteIds.push(fullNoteId)
+    noteBytes.push(fullNoteBytes)
+  }
+
+  return [txResult.executedTransaction().id().toHex(), noteIds, noteBytes];
 }
 
 export async function consumeAllNotes(noteIds: string[], accountId: string) {
@@ -115,6 +142,8 @@ export async function mintToken(
   amount: number
 ) {
   const client = await getClient();
+  const res = await client.syncState();
+  console.log(res)
   const { AccountId, NoteType } = await import("@demox-labs/miden-sdk");
 
   // Create mint transaction request
@@ -169,4 +198,12 @@ export async function deployFaucet(
 async function getAccountId(accountId: string) {
   const { AccountId } = await import("@demox-labs/miden-sdk");
   return AccountId.fromHex(accountId);
+}
+
+export async function getPrivateNotes(accountId: string) {
+  const client = await getClient();
+  const res = await client.syncState();
+
+  
+  client.exportNote()
 }

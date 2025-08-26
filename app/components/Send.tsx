@@ -1,16 +1,19 @@
 import { useState, useRef, useEffect } from "react";
-import { Recipient, Faucet } from "../types";
+import { Recipient, Faucet, Contact } from "../types";
 import toast from "react-hot-toast";
 import {
   batchTransfer,
   getAccountAssets,
   getAccountId,
 } from "@/lib/midenClient";
+import { init } from "next/dist/compiled/webpack/webpack";
+import { getDisp, MessageType } from "@/lib/wakuClient";
+import { hexToUint8Array } from "@/lib/utils";
 
 interface SendProps {
   selectedAccount: string | null;
   deployedFaucets: Faucet[];
-  addressBook: { name: string; address: string }[];
+  addressBook: Contact[];
   fetchPortfolio?: () => Promise<void>;
 }
 
@@ -22,7 +25,7 @@ export default function Send({
 }: SendProps) {
   const [isPrivate, setIsPrivate] = useState(false);
   const [recipients, setRecipients] = useState<Recipient[]>([
-    { address: "", amount: "" },
+    { address: "", amount: "", publicKey: "" },
   ]);
   const [batchFaucetId, setBatchFaucetId] = useState<string>("");
   const [isSending, setIsSending] = useState(false);
@@ -31,7 +34,7 @@ export default function Send({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const addRecipient = () => {
-    setRecipients([...recipients, { address: "", amount: "" }]);
+    setRecipients([...recipients, { address: "", amount: "", publicKey: "" }]);
   };
 
   const removeRecipient = (index: number) => {
@@ -40,7 +43,7 @@ export default function Send({
 
   const updateRecipient = (
     index: number,
-    field: "address" | "amount",
+    field: "address" | "amount" | "publicKey",
     value: string
   ) => {
     const newRecipients = [...recipients];
@@ -48,13 +51,15 @@ export default function Send({
     setRecipients(newRecipients);
   };
 
-  const selectFromAddressBook = (address: string) => {
+  const selectFromAddressBook = (address: string, publicKey: string) => {
     const lastRecipient = recipients[recipients.length - 1];
     if (lastRecipient && !lastRecipient.address) {
       updateRecipient(recipients.length - 1, "address", address);
+      updateRecipient(recipients.length - 1, "publicKey", publicKey);
     } else {
       addRecipient();
       updateRecipient(recipients.length, "address", address);
+      updateRecipient(recipients.length - 1, "publicKey", publicKey);
     }
     setShowAddressBook(false);
   };
@@ -83,7 +88,7 @@ export default function Send({
       }));
       toast.loading("Sending transactions...");
 
-      const txId = await batchTransfer(
+      const [txId, noteIds, noteBytes] = await batchTransfer(
         AccountId.fromHex(selectedAccount),
         transferRequests,
         isPrivate
@@ -102,7 +107,18 @@ export default function Send({
           </a>
         </div>
       );
-      setRecipients([{ address: "", amount: "" }]);
+      const dispatcher = getDisp();
+      if (dispatcher) {
+        const publicKeyUint8Array = hexToUint8Array(recipients[0].publicKey);
+        const result = await dispatcher.emit(MessageType, {txId: txId, noteIds: noteIds, noteBytes: noteBytes}, undefined, publicKeyUint8Array);
+        if (!result) {
+          console.error("Failed to emit message to Waku");
+          toast.error("Failed to send notes to the TX recipient")
+        } else {
+          toast.success("Transactions info sent successfully");
+        }
+      } 
+      setRecipients([{ address: "", amount: "", publicKey: "" }]); // reset recipients
 
       // update balance
       if (fetchPortfolio) {
@@ -201,7 +217,7 @@ export default function Send({
                     <button
                       key={i}
                       onClick={() => {
-                        selectFromAddressBook(contact.address);
+                        selectFromAddressBook(contact.address, contact.publicKey);
                         setShowAddressBook(false);
                         setActiveInputIndex(null);
                       }}

@@ -248,13 +248,14 @@ export default function AccountManagement({
                       {account.isPublic ? "Public Account" : "Private Account"}
                     </p>
                   </div>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(account.id);
-                      toast.success("Account ID copied to clipboard");
-                    }}
-                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                  >
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(account.id);
+                        toast.success("Account ID copied to clipboard");
+                      }}
+                      className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -265,6 +266,26 @@ export default function AccountManagement({
                       <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
                     </svg>
                   </button>
+                    <button
+                      onClick={() => {
+                        const accountInfo = localStorage.getItem(`account-${account.id}`);
+                        if (accountInfo) {
+                          const { publicKey } = JSON.parse(accountInfo);
+                          const url = new URL(window.location.href);
+                          url.searchParams.set('name', account.name);
+                          url.searchParams.set('address', account.id);
+                          url.searchParams.set('publicKey', publicKey);
+                          navigator.clipboard.writeText(url.toString());
+                          toast.success("Share link copied to clipboard");
+                        }
+                      }}
+                      className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <p className="text-sm text-slate-500 dark:text-slate-400">

@@ -24,3 +24,9 @@ export type Account = {
   name: string;
   isPublic: boolean;
 };
+
+export interface PrivateTransactionInfo {
+    txId: string;
+    noteIds: string[];
+    noteBytes: string[];
+}

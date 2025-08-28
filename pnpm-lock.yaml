@@ -45,8 +45,8 @@ importers:
         specifier: ^2.6.0
         version: 2.6.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       waku-dispatcher:
-        specifier: ^0.0.25
-        version: 0.0.25(@multiformats/multiaddr@12.5.1)
+        specifier: ^0.0.29
+        version: 0.0.29(@multiformats/multiaddr@12.5.1)
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.1.12
@@ -693,8 +693,20 @@ packages:
       libp2p:
         optional: true
 
-  '@waku/discovery@0.0.10':
-    resolution: {integrity: sha512-SchsiDlLMpw9kecpd66pqsNzKWOe73Wkv2pdaZLDXxrWIdp+gYA63LVBr8PzPw1PGX4YlvbGZw7T5wN8rrGAmA==}
+  '@waku/core@0.0.38':
+    resolution: {integrity: sha512-Vm7o5uA7oQDc5tL6UHWUCsNqk8U7Dw+jAzbIjfsUJjNCtWov/8e1+ysrihcJfz0YmQnXfiuGA/rJSaJwMhtiNQ==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@multiformats/multiaddr': ^12.0.0
+      libp2p: 2.8.11
+    peerDependenciesMeta:
+      '@multiformats/multiaddr':
+        optional: true
+      libp2p:
+        optional: true
+
+  '@waku/discovery@0.0.11':
+    resolution: {integrity: sha512-PeL1nECYHnkCAZlIAl72JBqnuKOABlaxU0LydhH6gyCuwfilw09aWD8JFk6oVwLyW2LhUpckkUWP8Gg18qIW8g==}
     engines: {node: '>=22'}
 
   '@waku/enr@0.0.31':
@@ -706,8 +718,21 @@ packages:
       '@multiformats/multiaddr':
         optional: true
 
+  '@waku/enr@0.0.32':
+    resolution: {integrity: sha512-bAC/uYV9L25mCjoFY0Z9dQzrZr8/OV60GhNGbbqvRi9uX/k6suiT4guWATzW01c3p1TsWEO1uJS2zDzSPvgcWg==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@multiformats/multiaddr': ^12.0.0
+    peerDependenciesMeta:
+      '@multiformats/multiaddr':
+        optional: true
+
   '@waku/interfaces@0.0.32':
     resolution: {integrity: sha512-4MNfc7ZzQCyQZR1GQQKPgHaWTuPTIvE2wo/b7iokjdeOT+ZSKyJFSetcV07cqnBwyzUv1gc53bJdzyHwVIa5Vw==}
+    engines: {node: '>=22'}
+
+  '@waku/interfaces@0.0.33':
+    resolution: {integrity: sha512-+DAc6l/pxW+o8a9NQb3bjZ0auwItXGuamqJe8UmjJd5w70RVqNZgl8WNH9lAkOH2UswYBdQjKaS5VNxBMFj8ew==}
     engines: {node: '>=22'}
 
   '@waku/message-encryption@0.0.35':
@@ -718,12 +743,20 @@ packages:
     resolution: {integrity: sha512-JR7wiy3Di628Ywo9qKIi7rhfdC2K7ABoaWa9WX4ZQKieYDs+YwOK+syE53VNwXrtponNeLDI0JIOFzRDalUm1A==}
     engines: {node: '>=22'}
 
-  '@waku/sdk@0.0.33':
-    resolution: {integrity: sha512-14zsFneQBZZlfiVbw724R9JQII9Cp+jp0fB5Rd0sdpST3YEhq+YdGnQuYLIAg7YUCpaBP2BJpfjO82w2NWP5Ng==}
+  '@waku/proto@0.0.13':
+    resolution: {integrity: sha512-t2ZFQ4TSJWsyljxBIRhA1lOvmgqDCReiX2GaRoJEXWnglOYxWlHzQ7rkIq1aONAiRqG6JWB4nfE4FcJVSE7TkA==}
+    engines: {node: '>=22'}
+
+  '@waku/sdk@0.0.34':
+    resolution: {integrity: sha512-1kLafimSX9QeSk2/W/V+ErcekZgMR/OmtqmtM78BhW7n+Yo9XpI1ZVsGGKIu3mXnt/mKgCt0Pg4mViEl4PIlIg==}
     engines: {node: '>=22'}
 
   '@waku/utils@0.0.25':
     resolution: {integrity: sha512-yCbfQ3uqByGNUvCNTj6oHi8fJ6BdVvg+Rj0y2YKrZDSNn73uTMF856lCJdsE86eqDZNCDaRaawTs3ZNEXyWaXw==}
+    engines: {node: '>=22'}
+
+  '@waku/utils@0.0.26':
+    resolution: {integrity: sha512-SAtusOZMSe9IGfeEucxkdsIiFYX0/2qrJUUC837Gqr6bJpimnrbSfO2cC7OpQ8SjeNbe3NUPa+/+kl3F8UDQkg==}
     engines: {node: '>=22'}
 
   abort-error@1.0.1:
@@ -1764,8 +1797,8 @@ packages:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
 
-  waku-dispatcher@0.0.25:
-    resolution: {integrity: sha512-fhodKzHSJXqchuCMAk/aOoa5trXdl9tJfVjE4opUNfUBbCZFxvv7kBVdULT8+Tnfk0QBn+NPY1IuYqcPpn8Npg==}
+  waku-dispatcher@0.0.29:
+    resolution: {integrity: sha512-Xb5yswJYIkCgVbeWobKYKXivc0EZddzLiouTge8QIad4y8uKU6d7nFdijPqlAOBnChf4HBNLAJiGld1MU7AiPw==}
     engines: {node: '>=18'}
     bundledDependencies:
       - '@waku/message-encryption'
@@ -2604,13 +2637,33 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@waku/discovery@0.0.10(@multiformats/multiaddr@12.5.1)(libp2p@2.8.11)':
+  '@waku/core@0.0.38(@multiformats/multiaddr@12.5.1)(libp2p@2.8.11)':
     dependencies:
-      '@waku/core': 0.0.37(@multiformats/multiaddr@12.5.1)(libp2p@2.8.11)
-      '@waku/enr': 0.0.31(@multiformats/multiaddr@12.5.1)
-      '@waku/interfaces': 0.0.32
-      '@waku/proto': 0.0.12
-      '@waku/utils': 0.0.25
+      '@libp2p/ping': 2.0.35
+      '@noble/hashes': 1.8.0
+      '@waku/enr': 0.0.32(@multiformats/multiaddr@12.5.1)
+      '@waku/interfaces': 0.0.33
+      '@waku/proto': 0.0.13
+      '@waku/utils': 0.0.26
+      debug: 4.4.1
+      it-all: 3.0.9
+      it-length-prefixed: 9.1.1
+      it-pipe: 3.0.1
+      uint8arraylist: 2.4.8
+      uuid: 9.0.1
+    optionalDependencies:
+      '@multiformats/multiaddr': 12.5.1
+      libp2p: 2.8.11
+    transitivePeerDependencies:
+      - supports-color
+
+  '@waku/discovery@0.0.11(@multiformats/multiaddr@12.5.1)(libp2p@2.8.11)':
+    dependencies:
+      '@waku/core': 0.0.38(@multiformats/multiaddr@12.5.1)(libp2p@2.8.11)
+      '@waku/enr': 0.0.32(@multiformats/multiaddr@12.5.1)
+      '@waku/interfaces': 0.0.33
+      '@waku/proto': 0.0.13
+      '@waku/utils': 0.0.26
       debug: 4.4.1
       dns-over-http-resolver: 3.0.16
       hi-base32: 0.5.1
@@ -2634,7 +2687,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@waku/enr@0.0.32(@multiformats/multiaddr@12.5.1)':
+    dependencies:
+      '@ethersproject/rlp': 5.8.0
+      '@libp2p/crypto': 5.1.6
+      '@libp2p/peer-id': 5.1.7
+      '@noble/secp256k1': 1.7.2
+      '@waku/utils': 0.0.26
+      debug: 4.4.1
+      js-sha3: 0.9.3
+    optionalDependencies:
+      '@multiformats/multiaddr': 12.5.1
+    transitivePeerDependencies:
+      - supports-color
+
   '@waku/interfaces@0.0.32': {}
+
+  '@waku/interfaces@0.0.33': {}
 
   '@waku/message-encryption@0.0.35(@multiformats/multiaddr@12.5.1)(libp2p@2.8.11)':
     dependencies:
@@ -2655,7 +2724,11 @@ snapshots:
     dependencies:
       protons-runtime: 5.6.0
 
-  '@waku/sdk@0.0.33(@multiformats/multiaddr@12.5.1)':
+  '@waku/proto@0.0.13':
+    dependencies:
+      protons-runtime: 5.6.0
+
+  '@waku/sdk@0.0.34(@multiformats/multiaddr@12.5.1)':
     dependencies:
       '@chainsafe/libp2p-noise': 16.1.3
       '@libp2p/bootstrap': 11.0.42
@@ -2664,11 +2737,11 @@ snapshots:
       '@libp2p/ping': 2.0.35
       '@libp2p/websockets': 9.2.16
       '@noble/hashes': 1.8.0
-      '@waku/core': 0.0.37(@multiformats/multiaddr@12.5.1)(libp2p@2.8.11)
-      '@waku/discovery': 0.0.10(@multiformats/multiaddr@12.5.1)(libp2p@2.8.11)
-      '@waku/interfaces': 0.0.32
-      '@waku/proto': 0.0.12
-      '@waku/utils': 0.0.25
+      '@waku/core': 0.0.38(@multiformats/multiaddr@12.5.1)(libp2p@2.8.11)
+      '@waku/discovery': 0.0.11(@multiformats/multiaddr@12.5.1)(libp2p@2.8.11)
+      '@waku/interfaces': 0.0.33
+      '@waku/proto': 0.0.13
+      '@waku/utils': 0.0.26
       libp2p: 2.8.11
     transitivePeerDependencies:
       - '@multiformats/multiaddr'
@@ -2680,6 +2753,16 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
       '@waku/interfaces': 0.0.32
+      chai: 4.5.0
+      debug: 4.4.1
+      uint8arrays: 5.1.0
+    transitivePeerDependencies:
+      - supports-color
+
+  '@waku/utils@0.0.26':
+    dependencies:
+      '@noble/hashes': 1.8.0
+      '@waku/interfaces': 0.0.33
       chai: 4.5.0
       debug: 4.4.1
       uint8arrays: 5.1.0
@@ -3753,10 +3836,10 @@ snapshots:
 
   uuid@9.0.1: {}
 
-  waku-dispatcher@0.0.25(@multiformats/multiaddr@12.5.1):
+  waku-dispatcher@0.0.29(@multiformats/multiaddr@12.5.1):
     dependencies:
       '@libp2p/crypto': 4.1.9
-      '@waku/sdk': 0.0.33(@multiformats/multiaddr@12.5.1)
+      '@waku/sdk': 0.0.34(@multiformats/multiaddr@12.5.1)
       ethers: 6.15.0
     transitivePeerDependencies:
       - '@multiformats/multiaddr'

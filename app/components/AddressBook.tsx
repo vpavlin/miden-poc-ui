@@ -5,16 +5,22 @@ import toast from "react-hot-toast";
 interface AddressBookProps {
   addressBook: Contact[];
   setAddressBook: (contacts: Contact[]) => void;
+  prefillData?: {
+    name?: string;
+    address?: string;
+    publicKey?: string;
+  };
 }
 
 export default function AddressBook({
   addressBook,
   setAddressBook,
+  prefillData,
 }: AddressBookProps) {
   const [newContact, setNewContact] = useState<Contact>({
-    name: "",
-    address: "",
-    publicKey: "",
+    name: prefillData?.name || "",
+    address: prefillData?.address || "",
+    publicKey: prefillData?.publicKey || "",
   });
 
   const addToAddressBook = () => {

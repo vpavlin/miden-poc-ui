@@ -30,7 +30,6 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
 function PublicKeyDisplay() {
   const { accountId } = useWallet();
-  console.log(accountId)
   return accountId ? (
     <div
       style={{
@@ -48,5 +47,5 @@ function PublicKeyDisplay() {
     >
       Connected: {accountId}
     </div>
-  ) : <WalletMultiButton />;
+  ) : null;
 }

@@ -19,6 +19,11 @@ export const dynamic = "force-dynamic";
 export default function Home() {
   const [selectedTab, setSelectedTab] = useState<Tab>("send");
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+  const [prefillData, setPrefillData] = useState({
+    name: "",
+    address: "",
+    publicKey: "",
+  });
   const [deployedAccounts, setDeployedAccounts] = useState<Account[]>([]);
   const [deployedFaucets, setDeployedFaucets] = useState<Faucet[]>([]);
   const [addressBook, setAddressBook] = useState<Contact[]>([]);
@@ -37,6 +42,23 @@ export default function Home() {
     if (savedAccounts) setDeployedAccounts(JSON.parse(savedAccounts));
     if (savedFaucets) setDeployedFaucets(JSON.parse(savedFaucets));
     if (savedAddressBook) setAddressBook(JSON.parse(savedAddressBook));
+
+    // Parse query parameters
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const name = urlParams.get('name');
+      const address = urlParams.get('address');
+      const publicKey = urlParams.get('publicKey');
+
+      if (name || address || publicKey) {
+        setPrefillData({
+          name: name || "",
+          address: address || "",
+          publicKey: publicKey || "",
+        });
+        setSelectedTab("addressbook");
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -183,6 +205,7 @@ export default function Home() {
               <AddressBook
                 addressBook={addressBook}
                 setAddressBook={setAddressBook}
+                prefillData={prefillData}
               />
             )}
             {selectedTab === "notes" && (

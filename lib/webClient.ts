@@ -2,16 +2,15 @@
 
 import {
   WebClient,
-  AccountId,
-  TransactionRequestBuilder,
-  FungibleAsset,
-  OutputNotesArray,
-  NoteType,
-  AccountStorageMode,
-  OutputNote
+  OutputNote,
+  TransactionFilter,
+  NoteFilter,
+  NoteFilterTypes
 } from "@demox-labs/miden-sdk";
 import { buildP2IDNote } from "./utils";
 import { nodeEndpoint } from "./constants";
+import { resolve } from "path";
+import toast from "react-hot-toast";
 
 export interface Asset {
   tokenAddress: string;
@@ -25,20 +24,70 @@ export interface TransferRequest {
 }
 
 export interface PrivateTransactionInfo {
-  txId: string;
-  noteIds: string[];
-  noteBytes: string[];
+    txId: string;
+    noteIds: string[];
+    noteBytes: string[];
 }
 
-let client: any = null;
+export let noteIdCache:string[] = [] 
+export let noteCache:string[] = [] 
+let importing = false;
 
-export async function getClient() {
-  if (!client) {
-    const { WebClient } = await import("@demox-labs/miden-sdk");
-    client = await WebClient.createClient(nodeEndpoint);
-    await client.syncState();
+export async function importNotes():Promise<string[]> {
+    if (importing) return [];
+    importing = true;
+    try {
+      const client = await getClient();
+
+      const noteIds = [...noteIdCache]
+      noteIdCache = []
+      const noteBytes = [...noteCache]
+      noteCache = []
+
+      await client.syncState();
+
+      const importedNoteIDs = [];
+      
+      const notes = await client.getInputNotes(new NoteFilter(NoteFilterTypes.All));
+      for (let i = 0; i < noteBytes.length; i++){
+        if (notes.find((n) => n.id().toString() === noteIds[i])) {
+          console.log(`Note ${noteIds[i]} already imported, skipping`);
+          continue;
+        }
+        const importedNoteID = await client.importNote(noteBytes[i]);
+        importedNoteIDs.push(importedNoteID);
+        console.log(`Note ${importedNoteID} imported successfully`);
+        toast.success(`Note ${importedNoteID} imported successfully`, {duration: 3000});
+      }
+      return importedNoteIDs;
+    } catch (error) {
+      console.error("Error importing notes:", error);
+      return [];
+    } finally {
+      importing = false;
+    }
+
+    return [];
+
+}
+
+
+
+let clientPromise: Promise<WebClient>;
+let client: WebClient | null = null;
+
+
+export async function getClient(): Promise<WebClient> {
+  if (!client && !clientPromise) {
+    clientPromise = new Promise(async (resolve) => {
+      const { WebClient } = await import("@demox-labs/miden-sdk");
+      client = await WebClient.createClient(nodeEndpoint);
+      await client.syncState();
+      setInterval(async () => importNotes(), 5000)
+      resolve(client);
+    });
   }
-  return client;
+  return clientPromise;
 }
 
 export async function getAccountAssets(accountId: any): Promise<Asset[]> {
@@ -99,6 +148,33 @@ export async function batchTransfer(
   const txResult = await client.newTransaction(sender, transactionRequest);
 
   await client.submitTransaction(txResult);
+  let txId = null;
+  while (!txId) {
+    try {
+      txId = txResult.executedTransaction().id().toHex();
+    } catch (e) {
+      console.log(e)
+      // Transaction not yet executed, wait and retry
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await client.syncState();
+    }
+  }
+  console.log("Transaction ID:", txId);
+  
+  // Wait for transaction to be committed
+  let isCommitted = false;
+  while (!isCommitted) {
+    await client.syncState();
+    const uncommittedTransactions = await client.getTransactions(
+      TransactionFilter.uncommitted()
+    );
+    isCommitted = !uncommittedTransactions.some((tx: any) => tx.id().toHex() === txId);
+    
+    if (!isCommitted) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+  
   await client.syncState();
 
   const noteIds = []
@@ -118,7 +194,7 @@ export async function batchTransfer(
     noteBytes.push(fullNoteBytes)
   }
 
-  return [txResult.executedTransaction().id().toHex(), noteIds, noteBytes];
+  return [txId, noteIds, noteBytes];
 }
 
 export async function consumeAllNotes(noteIds: string[], accountId: string) {
@@ -198,12 +274,4 @@ export async function deployFaucet(
 async function getAccountId(accountId: string) {
   const { AccountId } = await import("@demox-labs/miden-sdk");
   return AccountId.fromHex(accountId);
-}
-
-export async function getPrivateNotes(accountId: string) {
-  const client = await getClient();
-  const res = await client.syncState();
-
-  
-  client.exportNote()
 }
